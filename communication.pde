@@ -1,82 +1,113 @@
-// import UDP library
-import hypermedia.net.*;
+import android.content.Intent;
+import android.os.Bundle;
+import ketai.net.bluetooth.*;
+import ketai.ui.*;
+import ketai.net.*;
+
+KetaiBluetooth bt;
 
 void comms() {
-  wifiArrayCounter=0;
+  commsArrayCounter=0;
   create();
-  byte[] tosend=new byte[wifiArrayCounter];
-  for (int i=0; i<wifiArrayCounter; i++) {
-    tosend[i]=arrayToSend[i];
+  byte[] tosend=new byte[commsArrayCounter+1];
+  for (int i=0; i<commsArrayCounter; i++) {
+    tosend[i]=byte(arrayToSend[i]);
+    println(tosend[i]);
   }
-  udp.send(tosend, "10.25.21.255", 2521);
+  tosend[commsArrayCounter]=byte(255);
+  bt.broadcast(tosend);
 }
 
-void receive( byte[] data, String ip, int port ) {  // <-- extended handler
+void onBluetoothDataEvent(String who, byte[] data) {
+  background(50, 0, 0);
+  text(who, 50, 50);
   for (int i=0; i<data.length; i++) {
-    arrayRecvd[i]=(256+data[i])%256;
+    text(data[i], 100, 100+i*40);
   }
-  wifiArrayCounter=0;
-  parse();
 }
+
+void setupComms() {
+  bt = new KetaiBluetooth(this);
+  bt.start();
+  bt.connectToDeviceByName(bt.getPairedDeviceNames().get(0));
+}
+
 void addBoolean(boolean d) {
   if (d) {
-    arrayToSend[wifiArrayCounter]=1;
+    arrayToSend[commsArrayCounter]=byte(129);
   } else {
-    arrayToSend[wifiArrayCounter]=0;
+    arrayToSend[commsArrayCounter]=byte(128);
   }
-  wifiArrayCounter++;
+  commsArrayCounter++;
 }
 void addByte(byte d) {
-  arrayToSend[wifiArrayCounter]=d;
-  wifiArrayCounter++;
+  arrayToSend[commsArrayCounter]=byte(d&0x7F);
+  commsArrayCounter++;
+  arrayToSend[commsArrayCounter]=byte(d>>>4);
+  commsArrayCounter++;
 }
 void addInt(int d) {
-  arrayToSend[wifiArrayCounter] = byte((d & 0xFF));
-  wifiArrayCounter++;
-  arrayToSend[wifiArrayCounter] = byte(((d >>> 8) & 0xFF));  
-  wifiArrayCounter++;
-  arrayToSend[wifiArrayCounter] = byte(((d >>> 16) & 0xFF));  
-  wifiArrayCounter++;
-  arrayToSend[wifiArrayCounter] = byte(((d >>> 24) & 0xFF));  
-  wifiArrayCounter++;
+  arrayToSend[commsArrayCounter]=byte(d&0x7F);
+  commsArrayCounter++;
+  arrayToSend[commsArrayCounter]=byte((d>>>4)&0x7F);
+  commsArrayCounter++;
+  arrayToSend[commsArrayCounter]=byte((d>>>8)&0x7F);
+  commsArrayCounter++;
+  arrayToSend[commsArrayCounter]=byte((d>>>12)&0x7F);
+  commsArrayCounter++;
+  arrayToSend[commsArrayCounter]=byte((d>>>16)&0x7F);
+  commsArrayCounter++;
+  arrayToSend[commsArrayCounter]=byte((d>>>20)&0x7F);
+  commsArrayCounter++;
+  arrayToSend[commsArrayCounter]=byte((d>>>24)&0x7F);
+  commsArrayCounter++;
+  arrayToSend[commsArrayCounter]=byte((d>>>28)&0x7F);
+  commsArrayCounter++;
 }
 void addFloat(float d) {
-  int bits = Float.floatToIntBits(d);
-  arrayToSend[wifiArrayCounter] = (byte)(bits & 0xFF);  
-  wifiArrayCounter++;
-  arrayToSend[wifiArrayCounter] = (byte)((bits >>> 8) & 0xFF);  
-  wifiArrayCounter++;
-  arrayToSend[wifiArrayCounter] = (byte)((bits >>> 16) & 0xFF);  
-  wifiArrayCounter++;
-  arrayToSend[wifiArrayCounter] = (byte)((bits >>> 24) & 0xFF);
-  wifiArrayCounter++;
+  arrayToSend[commsArrayCounter]=byte((byte)d&0x7F);
+  commsArrayCounter++;
+  arrayToSend[commsArrayCounter]=byte(((byte)d>>>4)&0x7F);
+  commsArrayCounter++;
+  arrayToSend[commsArrayCounter]=byte(((byte)d>>>8)&0x7F);
+  commsArrayCounter++;
+  arrayToSend[commsArrayCounter]=byte(((byte)d>>>12)&0x7F);
+  commsArrayCounter++;
+  arrayToSend[commsArrayCounter]=byte(((byte)d>>>16)&0x7F);
+  commsArrayCounter++;
+  arrayToSend[commsArrayCounter]=byte(((byte)d>>>20)&0x7F);
+  commsArrayCounter++;
+  arrayToSend[commsArrayCounter]=byte(((byte)d>>>24)&0x7F);
+  commsArrayCounter++;
+  arrayToSend[commsArrayCounter]=byte(((byte)d>>>28)&0x7F);
+  commsArrayCounter++;
 }
 boolean parseBl() {
   boolean d;
-  d=arrayRecvd[wifiArrayCounter]==1;
-  wifiArrayCounter++;
+  d=arrayRecvd[commsArrayCounter]==129;
+  commsArrayCounter++;
   return d;
 }
 int parseBy() {
   int d;
-  d=int(arrayRecvd[wifiArrayCounter]);
-  wifiArrayCounter++;
+  d=int(arrayRecvd[commsArrayCounter]);
+  commsArrayCounter++;
   return d;
 }
 int parseIn() {
-  int d = (arrayRecvd[wifiArrayCounter+3]<<24)+(arrayRecvd[wifiArrayCounter+2]<<16)+(arrayRecvd[wifiArrayCounter+1]<<8)+arrayRecvd[wifiArrayCounter];
-  wifiArrayCounter++;
-  wifiArrayCounter++;
-  wifiArrayCounter++;
-  wifiArrayCounter++;
+  int d = (arrayRecvd[commsArrayCounter+3]<<24)+(arrayRecvd[commsArrayCounter+2]<<16)+(arrayRecvd[commsArrayCounter+1]<<8)+arrayRecvd[commsArrayCounter];
+  commsArrayCounter++;
+  commsArrayCounter++;
+  commsArrayCounter++;
+  commsArrayCounter++;
   return d;
 }
 float parseFl() {
-  String hexint=hex(byte(arrayRecvd[wifiArrayCounter+3]))+hex(byte(arrayRecvd[wifiArrayCounter+2]))+hex(byte(arrayRecvd[wifiArrayCounter+1]))+hex(byte(arrayRecvd[wifiArrayCounter]));
+  String hexint=hex(byte(arrayRecvd[commsArrayCounter+3]))+hex(byte(arrayRecvd[commsArrayCounter+2]))+hex(byte(arrayRecvd[commsArrayCounter+1]))+hex(byte(arrayRecvd[commsArrayCounter]));
   float d = Float.intBitsToFloat(unhex(hexint)); 
-  wifiArrayCounter++;
-  wifiArrayCounter++;
-  wifiArrayCounter++;
-  wifiArrayCounter++;
+  commsArrayCounter++;
+  commsArrayCounter++;
+  commsArrayCounter++;
+  commsArrayCounter++;
   return d;
 }

@@ -39,14 +39,14 @@ class Slider {
       n=true;
       valStr="";
       try {
-        KetaiKeyboard.show(ursabb_DS_prototype.this);
+        KetaiKeyboard.show(ursabbDSproto.this);
       }
       catch(NoSuchMethodError e) {
       }
     } else if (n==true&&(mousePushed||(keyPressed&&key==ENTER))) {
       n=false;
       try {
-        KetaiKeyboard.hide(ursabb_DS_prototype.this);
+        KetaiKeyboard.hide(ursabbDSproto.this);
       }
       catch(NoSuchMethodError e) {
       }
