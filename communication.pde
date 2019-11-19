@@ -12,18 +12,20 @@ void comms() {
   byte[] tosend=new byte[commsArrayCounter+1];
   for (int i=0; i<commsArrayCounter; i++) {
     tosend[i]=byte(arrayToSend[i]);
-    println(tosend[i]);
   }
   tosend[commsArrayCounter]=byte(255);
   bt.broadcast(tosend);
 }
 
 void onBluetoothDataEvent(String who, byte[] data) {
-  background(50, 0, 0);
-  text(who, 50, 50);
   for (int i=0; i<data.length; i++) {
-    text(data[i], 100, 100+i*40);
+    arrayRecvd[i]=data[i];
+    println(data[i]);
+    text(data[i], width/2, 100+i*40);
+    arrayRecvd[i]=data[i];
   }
+  println("##########################");
+  parse();
 }
 
 void setupComms() {
@@ -95,7 +97,11 @@ int parseBy() {
   return d;
 }
 int parseIn() {
-  int d = (arrayRecvd[commsArrayCounter+3]<<24)+(arrayRecvd[commsArrayCounter+2]<<16)+(arrayRecvd[commsArrayCounter+1]<<8)+arrayRecvd[commsArrayCounter];
+  int d = (arrayRecvd[commsArrayCounter+7]<<28)+(arrayRecvd[commsArrayCounter+6]<<24)+(arrayRecvd[commsArrayCounter+5]<<20)+(arrayRecvd[commsArrayCounter+4]<<16)+(arrayRecvd[commsArrayCounter+3]<<12)+(arrayRecvd[commsArrayCounter+2]<<8)+(arrayRecvd[commsArrayCounter+1]<<4)+arrayRecvd[commsArrayCounter];
+  commsArrayCounter++;
+  commsArrayCounter++;
+  commsArrayCounter++;
+  commsArrayCounter++;  
   commsArrayCounter++;
   commsArrayCounter++;
   commsArrayCounter++;
@@ -103,8 +109,12 @@ int parseIn() {
   return d;
 }
 float parseFl() {
-  String hexint=hex(byte(arrayRecvd[commsArrayCounter+3]))+hex(byte(arrayRecvd[commsArrayCounter+2]))+hex(byte(arrayRecvd[commsArrayCounter+1]))+hex(byte(arrayRecvd[commsArrayCounter]));
+  String hexint=hex(byte(arrayRecvd[commsArrayCounter+7]<<4+arrayRecvd[commsArrayCounter+6]))+hex(byte(arrayRecvd[commsArrayCounter+5]<<4+arrayRecvd[commsArrayCounter+4]))+hex(byte(arrayRecvd[commsArrayCounter+3]<<4+arrayRecvd[commsArrayCounter+2]))+hex(byte(arrayRecvd[commsArrayCounter+1]<<4+arrayRecvd[commsArrayCounter]));
   float d = Float.intBitsToFloat(unhex(hexint)); 
+  commsArrayCounter++;
+  commsArrayCounter++;
+  commsArrayCounter++;
+  commsArrayCounter++;  
   commsArrayCounter++;
   commsArrayCounter++;
   commsArrayCounter++;

@@ -102,7 +102,10 @@ void create() {
   addByte(byte(ctrlModeVal));
   addByte(byte(speedVal));
   addByte(byte(turnSpeedVal));
-  addByte(byte(0));//don't send aux vars
+  addByte(byte(numSendAux));
+  for (int i=0; i<numSendAux; i++) {
+    addByte(byte(auxSendArray[i]));
+  }
   addBoolean(advanced);
   if (advanced) {
     addFloat(kP_angle);
@@ -132,7 +135,10 @@ void parse() {
   rightMotorSpeed=parseIn();
   pitchTarget=parseFl();
   pitchOffset=parseFl();
-  parseBy();//don't recieve auxVars
+  numAuxRecv=byte(parseBy());
+  for(byte i=0;i<numAuxRecv;i++){
+    auxRecvArray[i]=parseBy();
+  }
   if (parseBl()) {
     kP_angle=parseFl();
     kI_angle=parseFl();
